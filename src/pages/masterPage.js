@@ -9,6 +9,15 @@ import { session } from 'wix-storage-frontend';
 $w.onReady(function () {
     console.log("K'oxol - Sitio cargado exitosamente 🌿");
     
+    // Mensaje informativo sobre el estado actual
+    console.log("=====================================");
+    console.log("🚀 ESTADO ACTUAL DE DESARROLLO");
+    console.log("✅ JavaScript: 100% Completo");
+    console.log("⚠️  Elementos visuales: Pendientes de crear en Wix Editor");
+    console.log("⚠️  Wix Stores: Pendiente de activar");
+    console.log("📋 Siguiente paso: Crear elementos en Wix Editor");
+    console.log("=====================================");
+    
     // Inicializar funcionalidades del sitio
     initializeKoxolSite();
 });
@@ -45,35 +54,49 @@ function initializeKoxolSite() {
 function configureNavigation() {
     // Configurar enlaces de navegación principales
     try {
+        let navElementsFound = 0;
+        
         // Botón Inicio - redirige a página de inicio
-        if ($w("#navInicio")) {
-            $w("#navInicio").onClick(() => {
+        const navInicio = $w("#navInicio");
+        if (navInicio && navInicio.onClick) {
+            navInicio.onClick(() => {
                 wixLocation.to("/");
             });
+            navElementsFound++;
         }
         
         // Botón Productos - redirige a página de productos
-        if ($w("#navProductos")) {
-            $w("#navProductos").onClick(() => {
+        const navProductos = $w("#navProductos");
+        if (navProductos && navProductos.onClick) {
+            navProductos.onClick(() => {
                 wixLocation.to("/productos");
             });
+            navElementsFound++;
         }
         
         // Botón Nosotros - redirige a página acerca de
-        if ($w("#navNosotros")) {
-            $w("#navNosotros").onClick(() => {
+        const navNosotros = $w("#navNosotros");
+        if (navNosotros && navNosotros.onClick) {
+            navNosotros.onClick(() => {
                 wixLocation.to("/acerca-de");
             });
+            navElementsFound++;
         }
         
         // Botón Contacto - redirige a página de contacto  
-        if ($w("#navContacto")) {
-            $w("#navContacto").onClick(() => {
+        const navContacto = $w("#navContacto");
+        if (navContacto && navContacto.onClick) {
+            navContacto.onClick(() => {
                 wixLocation.to("/contacto");
             });
+            navElementsFound++;
         }
         
-        console.log("Navegación configurada ✅");
+        if (navElementsFound > 0) {
+            console.log(`Navegación configurada ✅ (${navElementsFound} elementos encontrados)`);
+        } else {
+            console.log("⚠️ Elementos de navegación no encontrados - Créalos en Wix Editor con IDs: #navInicio, #navProductos, #navNosotros, #navContacto");
+        }
     } catch (error) {
         console.log("Error configurando navegación:", error);
     }
@@ -262,26 +285,40 @@ function performSearch() {
  */
 function initializeCartFunctionality() {
     try {
+        // Verificar si Wix Stores está disponible
+        if (typeof wixStores === 'undefined' || !wixStores.getCurrentCart) {
+            console.log("⚠️ Wix Stores no está disponible - Activa la app de Wix Stores en tu sitio");
+            return;
+        }
+
         // Verificar si hay elementos de carrito
-        if ($w("#cartIcon") || $w("#cartButton")) {
+        const cartIcon = $w("#cartIcon");
+        const cartButton = $w("#cartButton");
+        
+        if (cartIcon || cartButton) {
             // Listener para cambios en el carrito
             wixStores.onCartChanged((cart) => {
-                updateCartCounter(cart.lineItems.length);
+                updateCartCounter(cart.lineItems ? cart.lineItems.length : 0);
             });
             
             // Obtener estado inicial del carrito
             wixStores.getCurrentCart()
                 .then((cart) => {
-                    updateCartCounter(cart.lineItems.length);
+                    updateCartCounter(cart.lineItems ? cart.lineItems.length : 0);
+                    console.log("Carrito configurado ✅");
                 })
                 .catch((error) => {
-                    console.log("Error obteniendo carrito:", error);
+                    if (error.message && error.message.includes('does not exist on site')) {
+                        console.log("⚠️ Wix Stores app no está instalada - Ve a tu Dashboard de Wix > Apps > Buscar 'Wix Stores' > Agregar");
+                    } else {
+                        console.log("⚠️ Error configurando carrito:", error.message);
+                    }
                 });
-                
-            console.log("Carrito configurado ✅");
+        } else {
+            console.log("⚠️ Elementos de carrito no encontrados - Créalos con IDs: #cartIcon, #cartButton, #cartBadge");
         }
     } catch (error) {
-        console.log("Carrito no disponible en esta página");
+        console.log("⚠️ Error inicializando carrito:", error.message);
     }
 }
 
